@@ -1,4 +1,4 @@
-namespace ms_notificaciones.Models
+namespace in_notificaciones.Models
 {
     public class ModeloCorreo
     {
