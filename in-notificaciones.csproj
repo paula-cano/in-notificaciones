@@ -6,6 +6,7 @@
     <RootNamespace>in_notificaciones</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.101.43"/>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.4"/>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     <PackageReference Include="SendGrid" Version="9.28.1"/>

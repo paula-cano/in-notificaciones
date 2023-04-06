@@ -2,7 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using in_notificaciones.Models;
-namespace ms_notificaciones.Controllers;
+using Amazon;
+using Amazon.SimpleNotificationService;
+using Amazon.SimpleNotificationService.Model;
+
+
+namespace in_notificaciones.Controllers;
 
 [ApiController]
 [Route("[controller]")]
@@ -15,7 +20,7 @@ public class NotificacionesController : ControllerBase
         var apiKey = Environment.GetEnvironmentVariable("app_inmobiliaria");
         var client = new SendGridClient(apiKey);
 
-        SendGridMessage msg = this.MensajeBase(datos);
+        SendGridMessage msg = this.CrearMensajeBase(datos);
         msg.SetTemplateId(Environment.GetEnvironmentVariable("TEST_TEMPLATE_ONE"));
         msg.SetTemplateData(new
         {
@@ -41,7 +46,7 @@ public class NotificacionesController : ControllerBase
         var apiKey = Environment.GetEnvironmentVariable("app_inmobiliaria");
         var client = new SendGridClient(apiKey);
 
-        SendGridMessage msg = this.MensajeBase(datos);
+        SendGridMessage msg = this.CrearMensajeBase(datos);
         msg.SetTemplateId(Environment.GetEnvironmentVariable("WELCOME_SENDGRID_TEMPLATE_ID"));
         msg.SetTemplateData(new
         {
@@ -67,7 +72,7 @@ public class NotificacionesController : ControllerBase
         var apiKey = Environment.GetEnvironmentVariable("app_inmobiliaria");
         var client = new SendGridClient(apiKey);
 
-        SendGridMessage msg = this.MensajeBase(datos);
+        SendGridMessage msg = this.CrearMensajeBase(datos);
         msg.SetTemplateId(Environment.GetEnvironmentVariable("TwoFA_SENDGRID_TEMPLATE_ID"));
         msg.SetTemplateData(new
         {
@@ -87,7 +92,42 @@ public class NotificacionesController : ControllerBase
     }
 
 
-    private SendGridMessage MensajeBase(ModeloCorreo datos)
+
+    //Envío SMS
+    [Route("enviar-sms-nueva-clave")]
+    [HttpPost]
+    public async Task<ActionResult> EnviarSMSNuevaClave(ModeloSms datos)
+    {
+        var accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY_AWS");
+        var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY_AWS");
+        var client = new AmazonSimpleNotificationServiceClient(accessKey, secretKey, RegionEndpoint.USEast1);
+        var messageAttributes = new Dictionary<string, MessageAttributeValue>();
+        var smsType = new MessageAttributeValue
+        {
+            DataType = "String",
+            StringValue = "Transactional"
+        };
+
+        messageAttributes.Add("AWS.SNS.SMS.SMSType", smsType);
+
+        PublishRequest request = new PublishRequest
+        {
+            Message = datos.contenidoMensaje,
+            PhoneNumber = datos.numeroDestino,
+            MessageAttributes = messageAttributes
+        };
+        try
+        {
+            await client.PublishAsync(request);
+            return Ok("Mensaje enviado");
+        }
+        catch
+        {
+            return BadRequest("Error enviando el sms");
+        }
+    }
+
+        private SendGridMessage CrearMensajeBase(ModeloCorreo datos)
     {
         var from = new EmailAddress(Environment.GetEnvironmentVariable("EMAIL_FROM"), Environment.GetEnvironmentVariable("NAME_FROM"));
         var subject = datos.asuntoCorreo;
@@ -97,7 +137,4 @@ public class NotificacionesController : ControllerBase
         var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
         return msg;
     }
-
-
-
 }
