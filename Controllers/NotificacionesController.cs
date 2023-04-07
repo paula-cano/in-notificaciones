@@ -94,7 +94,7 @@ public class NotificacionesController : ControllerBase
 
 
     //Envío SMS
-    [Route("enviar-sms-nueva-clave")]
+    [Route("enviar-sms")]
     [HttpPost]
     public async Task<ActionResult> EnviarSMSNuevaClave(ModeloSms datos)
     {
