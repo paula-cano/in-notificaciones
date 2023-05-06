@@ -73,7 +73,7 @@ public class NotificacionesController : ControllerBase
         var client = new SendGridClient(apiKey);
 
         SendGridMessage msg = this.CrearMensajeBase(datos);
-        msg.SetTemplateId(Environment.GetEnvironmentVariable("TwoFA_SENDGRID_TEMPLATE_ID"));
+        msg.SetTemplateId(Environment.GetEnvironmentVariable("TEMPLATE_CODIGO_2FA"));
         msg.SetTemplateData(new
         {
             nombre = datos.nombreDestino,
